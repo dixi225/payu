@@ -1,13 +1,10 @@
 "use client"
-import useBalance from "@repo/store/useBalance"
+import { Appbar } from "@repo/ui/appbar"
+import { signIn, signOut, useSession } from "next-auth/react"
 export default function Home() {
-  try{
-    console.log(useBalance())
-  }catch(err){console.log("here"+err)}
+  const session=useSession()
   return<>
-    <div className=" font-semibold text-9xl">
-      Hello from user
-
-    </div>
+    {(session.data!=null&&session.data.user)?<Appbar user={session.data.user} onSignin={signIn} onSignout={signOut}/>:<Appbar onSignin={signIn} onSignout={signOut}/>}
+    
   </>
 }
