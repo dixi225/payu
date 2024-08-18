@@ -1,10 +1,8 @@
-"use client"
-import { Appbar } from "@repo/ui/appbar"
-import { signIn, signOut, useSession } from "next-auth/react"
-export default function Home() {
-  const session=useSession()
-  return<>
-    {(session.data!=null&&session.data.user)?<Appbar user={session.data.user} onSignin={signIn} onSignout={signOut}/>:<Appbar onSignin={signIn} onSignout={signOut}/>}
-    
-  </>
+import { getServerSession } from "next-auth"
+import {redirect} from "next/navigation"
+
+export default async function Home() {
+  const session=await getServerSession()
+  if(session&&session.user) redirect("/dashboard")
+  else redirect("/api/auth/signin")
 }

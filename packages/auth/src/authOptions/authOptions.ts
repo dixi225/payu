@@ -3,6 +3,7 @@ import prisma from "@repo/db/client";
 import bcrypt from "bcrypt"
 
 export const options={
+    secret: process.env.NEXTAUTH_SECRET,    
     providers:[
         CredentialProvider({
             name:"Credentials",
@@ -10,8 +11,7 @@ export const options={
                 phone:{label:"Phone number", type:"text",placeholder:"Your Phone Number"},
                 password:{label:"Password",type:"password",placeholder:"Password"}
             },
-            async authorize(credentials:any){
-                    console.log("Hi")
+            async authorize(credentials:any):Promise<any>{
                     if(!credentials.password||!credentials.phone) return null
                     const {phone,password}=credentials
                     const existingUser = await prisma.user.findFirst({
@@ -20,7 +20,7 @@ export const options={
                         }
                     });
                     if(existingUser){
-                        const isPasswordValid=await bcrypt.compare(existingUser.password||"",password)
+                        const isPasswordValid=await bcrypt.compare(password,existingUser.password)
                         if(isPasswordValid) return existingUser
                         else return null
                     }
@@ -32,5 +32,16 @@ export const options={
                         }
                     })
             return user}})],
-            secret: process.env.JWT_SECRET || "secret",
-}
+            callbacks: {
+                async session({ token, session }: any) {
+                    try{
+                        session.user.id = token.sub
+                        return session
+                    }
+                    catch(err){
+                        console.log(err)
+                        return null
+                    } 
+                }
+            }
+        }
